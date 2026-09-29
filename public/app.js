@@ -1,0 +1,28 @@
+let guns=[],callouts=[],adminKey=localStorage.getItem("codmAdminKey")||"";
+const $=id=>document.getElementById(id);
+async function api(url,opt={}){const headers=opt.headers||{}; if(adminKey)headers["x-admin-key"]=adminKey; if(opt.body && !(opt.body instanceof FormData))headers["Content-Type"]="application/json"; const r=await fetch(url,{...opt,headers}); const d=await r.json().catch(()=>({})); if(!r.ok)throw new Error(d.error||"Request failed"); return d}
+async function load(){guns=await api("/api/guns");callouts=await api("/api/callouts");renderCategories();render();renderCallouts();if(adminKey)showDashboard()}
+function renderCategories(){let cats=[...new Set(guns.map(g=>g.category))].sort();$("category").innerHTML='<option value="">All categories</option>'+cats.map(x=>`<option>${esc(x)}</option>`).join("")}
+function render(){let q=$("search").value.toLowerCase(),cat=$("category").value;let arr=guns.filter(g=>(!cat||g.category===cat)&&(`${g.name} ${g.category} ${g.attachments.map(a=>a.name).join(" ")}`.toLowerCase().includes(q)));$("guns").innerHTML=arr.length?arr.map(g=>`<article class="gun" onclick="openGun(${g.id})"><div class="gun-top"><img class="gun-icon" src="${safe(g.icon)}"><div><h3>${esc(g.name)}</h3><span class="muted">${esc(g.category)}</span></div></div><div class="tags">${g.attachments.slice(0,5).map(a=>`<span class="tag">${esc(a.name)}</span>`).join("")}</div></article>`).join(""):'<p class="muted">No guns found.</p>'}
+function renderCallouts(){let arr=callouts.filter(c=>c.featured);$("callouts").innerHTML=arr.length?arr.map(c=>`<article class="callout"><img src="${safe(c.image||"https://placehold.co/600x350/111827/fff?text=Callout")}"><div><b>${esc(c.title)}</b><div class="muted">${esc(c.map)}</div><p class="muted">${esc(c.description)}</p></div></article>`).join(""):'<p class="muted">No featured callouts yet.</p>'}
+function openGun(id){let g=guns.find(x=>x.id===id);$("modalContent").innerHTML=`<p class="eyebrow">${esc(g.category)}</p><h2>${esc(g.name)}</h2><img class="detail-img" src="${safe(g.image||g.icon)}"><p class="muted">${esc(g.description)}</p><h3>Attachments</h3><div class="attachment-grid">${g.attachments.map(a=>`<div class="attachment"><img src="${safe(a.image||"https://placehold.co/500x300/1f2937/fff?text=Attachment")}"><p>${esc(a.name)}</p></div>`).join("")}</div>`;$("modal").classList.remove("hidden")}
+function closeModal(){$("modal").classList.add("hidden")}
+function openAdmin(){$("adminPanel").classList.remove("hidden");if(adminKey)showDashboard()}
+function closeAdmin(){$("adminPanel").classList.add("hidden")}
+$("adminBtn").onclick=openAdmin;$("search").oninput=render;$("category").onchange=render;
+$("themeBtn").onclick=()=>{document.body.classList.toggle("light");localStorage.setItem("theme",document.body.classList.contains("light")?"light":"dark")};
+if(localStorage.getItem("theme")==="light")document.body.classList.add("light");
+async function login(){try{let d=await api("/api/login",{method:"POST",body:JSON.stringify({username:$("user").value,password:$("pass").value})});adminKey=d.key;localStorage.setItem("codmAdminKey",adminKey);showDashboard()}catch(e){alert(e.message)}}
+function showDashboard(){$("adminLogin").classList.add("hidden");$("dashboard").classList.remove("hidden");adminList()}
+function showTab(id){$("gunTab").classList.toggle("hidden",id!=="gunTab");$("calloutTab").classList.toggle("hidden",id!=="calloutTab")}
+function logout(){adminKey="";localStorage.removeItem("codmAdminKey");$("dashboard").classList.add("hidden");$("adminLogin").classList.remove("hidden")}
+function addAttachmentRow(){let d=document.createElement("div");d.className="attach-row";d.innerHTML='<input class="an" placeholder="Attachment name"><input class="ai" placeholder="Attachment image URL"><button onclick="this.parentElement.remove()">×</button>';$("attachmentRows").appendChild(d)}
+addAttachmentRow();
+async function addGun(){let at=[...document.querySelectorAll(".attach-row")].map(r=>({name:r.querySelector(".an").value,image:r.querySelector(".ai").value})).filter(x=>x.name);if(!$("gName").value)return alert("Gun name is required.");try{await api("/api/guns",{method:"POST",body:JSON.stringify({name:$("gName").value,category:$("gCat").value,icon:$("gIcon").value,image:$("gImage").value,description:$("gDesc").value,attachments:at})});alert("Gun added.");$("gName").value="";await load();adminList()}catch(e){alert(e.message)}}
+async function addCallout(){try{await api("/api/callouts",{method:"POST",body:JSON.stringify({title:$("cTitle").value,map:$("cMap").value,image:$("cImage").value,description:$("cDesc").value,featured:"1"})});alert("Callout added.");await load();adminList()}catch(e){alert(e.message)}}
+function adminList(){$("adminList").innerHTML=guns.map(g=>`<div class="admin-item"><span>🔫 ${esc(g.name)}</span><button class="delete" onclick="removeGun(${g.id})">Remove</button></div>`).join("")+callouts.map(c=>`<div class="admin-item"><span>📍 ${esc(c.title)}</span><button class="delete" onclick="removeCallout(${c.id})">Remove</button></div>`).join("")}
+async function removeGun(id){if(confirm("Remove this gun?")){await api("/api/guns/"+id,{method:"DELETE"});await load();adminList()}}
+async function removeCallout(id){if(confirm("Remove this callout?")){await api("/api/callouts/"+id,{method:"DELETE"});await load();adminList()}}
+function esc(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function safe(v){return esc(v||"")}
+load().catch(e=>console.error(e));

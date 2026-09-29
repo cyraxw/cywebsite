@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#9b4dff"><title>CODM Attachments Hub • Purple Edition</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<header>
+  <div class="brand"><span class="logo">CYRAX</span><div><b>Cyrax Hub</b><small>Loadouts • Callouts • Guns</small></div></div>
+  <div class="header-actions">
+    <button id="themeBtn" class="icon-btn">☾</button>
+    <button id="adminBtn" class="primary">Admin</button>
+  </div>
+</header>
+
+<main>
+<section class="hero">
+  <div>
+    <p class="eyebrow">CALL OF DUTY: MOBILE</p>
+    <h1>Build your <span>perfect loadout.</span></h1>
+    <p class="sub">Search guns, inspect every attachment, and discover featured map callouts.</p>
+    <div class="search"><span>⌕</span><input id="search" placeholder="Search guns, categories, attachments..."></div>
+  </div>
+</section>
+
+<section class="section-head"><div><h2> Callouts</h2><p>Useful spots and locations for your next match.</p></div></section>
+<section id="callouts" class="callout-grid"></section>
+
+<section class="section-head"><div><h2>Guns & Attachments</h2><p>Tap a gun to see its complete attachment setup.</p></div><select id="category"><option value="">All categories</option></select></section>
+<section id="guns" class="gun-grid"></section>
+</main>
+
+<div id="modal" class="modal hidden"><div class="modal-card"><button class="close" onclick="closeModal()">×</button><div id="modalContent"></div></div></div>
+
+<div id="adminPanel" class="modal hidden"><div class="modal-card admin-card">
+<button class="close" onclick="closeAdmin()">×</button>
+<div id="adminLogin">
+<h2>Admin Login</h2><p>Only administrators can add or remove content.</p>
+<input id="user" placeholder="Username" value="admin"><input id="pass" placeholder="Password" type="password">
+<button class="primary full" onclick="login()">Sign in</button><p class="hint">Default: admin / admin123</p>
+</div>
+<div id="dashboard" class="hidden">
+<h2>Admin Dashboard</h2>
+<div class="tabs"><button onclick="showTab('gunTab')">Add Gun</button><button onclick="showTab('calloutTab')">Add Callout</button></div>
+<div id="gunTab">
+<label>Gun name<input id="gName"></label><label>Category<select id="gCat"><option>Assault Rifle</option><option>SMG</option><option>LMG</option><option>Sniper</option><option>Marksman</option><option>Shotgun</option><option>Pistol</option><option>Melee</option></select></label>
+<label>Gun icon URL<input id="gIcon" placeholder="https://..."></label><label>Gun picture URL<input id="gImage" placeholder="https://..."></label>
+<label>Description<textarea id="gDesc"></textarea></label>
+<h3>Attachments</h3><div id="attachmentRows"></div><button class="secondary" onclick="addAttachmentRow()">+ Add attachment</button>
+<button class="primary full" onclick="addGun()">Save Gun</button>
+</div>
+<div id="calloutTab" class="hidden">
+<label>Title<input id="cTitle"></label><label>Map<input id="cMap"></label><label>Image URL<input id="cImage"></label><label>Description<textarea id="cDesc"></textarea></label>
+<button class="primary full" onclick="addCallout()">Save Featured Callout</button>
+</div>
+<hr><h3>Existing content</h3><div id="adminList"></div>
+<button class="secondary full" onclick="logout()">Log out</button>
+</div></div></div>
+<script src="/app.js"></script>
+</body></html>
