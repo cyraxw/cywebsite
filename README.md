@@ -13,10 +13,6 @@
 4. Open:
    http://localhost:3000
 
-## Admin
-Click **Admin**.
-- Username: `admin`
-- Password: `admin123`
 
 Admin can add/remove guns and featured callouts. Normal visitors cannot modify content.
 
